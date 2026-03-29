@@ -54,7 +54,12 @@ async def admin_cancel(message: Message, state: FSMContext) -> None:
     logger.info("Admin login cancelled user_id=%s", message.from_user.id)
 
 
-@router.message(StateFilter(AdminAuth.waiting_password), F.text, ~Command())
+# ~Command() без аргументов в aiogram 3 падает; исключаем строки-команды по префиксу "/".
+@router.message(
+    StateFilter(AdminAuth.waiting_password),
+    F.text,
+    ~F.text.startswith("/"),
+)
 async def admin_password_received(message: Message, state: FSMContext) -> None:
     if not ADMIN_PASSWORD:
         await state.clear()
